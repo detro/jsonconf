@@ -1,0 +1,13 @@
+{
+    "name" : "user-config",
+    "shared" : {
+        "shared_field_num" : 2,
+        "shared_field_string" : "another string",
+        "shared_field_array" : [0, 1, "two"],
+        "shared_field_obj" : {
+            "key" : "chiave",
+            "another key" : "un'altra chiave"
+        },
+        "default" : "def!"
+    }
+}

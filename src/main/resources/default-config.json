@@ -1,0 +1,13 @@
+{
+    "name" : "default-config",
+    "shared" : {
+        "shared_field_num" : 1,
+        "shared_field_string" : "string",
+        "shared_field_array" : [0, 1, 2],
+        "shared_field_obj" : {
+            "key" : "key",
+            "value" : "@name"
+        },
+        "default" : "def!"
+    }
+}
