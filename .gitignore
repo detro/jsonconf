@@ -6,3 +6,4 @@ gradle/build/
 *.iws
 out/
 .DS_Store
+.idea/
