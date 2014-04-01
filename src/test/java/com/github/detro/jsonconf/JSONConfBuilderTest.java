@@ -104,6 +104,7 @@ public class JSONConfBuilderTest {
 
         sysProps.setProperty(cliPropsArrayName + "[0]", "name=\"cli config\"");
         sysProps.setProperty(cliPropsArrayName + "[1]", "shared.shared_field_num=3");
+        sysProps.setProperty(cliPropsArrayName + "[2]", "['annoyingly long string'].browsers=\"firefox\"");
 
         JSONConf c = new JSONConfBuilder("default-config.json")
                 .withUserConfFilePath("test-fixtures/config.json")
