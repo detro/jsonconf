@@ -1,5 +1,5 @@
 /*
-This file is part of the Sulfur project by Ivan De Marino (http://ivandemarino.me).
+This file is part of the JSONConf project by Ivan De Marino (http://ivandemarino.me).
 
 Copyright (c) 2013, Ivan De Marino (http://ivandemarino.me)
 All rights reserved.
