@@ -179,5 +179,11 @@ See [LICENSE.BSD](./LICENSE.BSD) located in the project source root.
 
 ## Setup in Intellij in Windows
 
-After cloning the project, enter the directory and type chmod +x ./gradlew.bat in order to download a local gradle.
-Run ./gradlew.bat idea to generate an Intellij project.
+After cloning the project, enter the directory and change the permission of gradle.bat.
+```bash
+chmod +x ./gradlew.bat
+```
+Use gradle to generate an Intellij project.
+```bash
+./gradlew.bat idea
+```
