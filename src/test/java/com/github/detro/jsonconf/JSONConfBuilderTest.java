@@ -30,10 +30,10 @@ package com.github.detro.jsonconf;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.List;
 import java.util.Properties;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.*;
 
 public class JSONConfBuilderTest {
 
@@ -105,6 +105,8 @@ public class JSONConfBuilderTest {
         sysProps.setProperty(cliPropsArrayName + "[0]", "name=\"cli config\"");
         sysProps.setProperty(cliPropsArrayName + "[1]", "shared.shared_field_num=3");
         sysProps.setProperty(cliPropsArrayName + "[2]", "['annoyingly long string'].browsers=\"firefox\"");
+        sysProps.setProperty(cliPropsArrayName + "[3]", "array_of_nums=[1, 2, 3]");
+        sysProps.setProperty(cliPropsArrayName + "[4]", "array_of_strings=[\"string1\", \"string2\", \"string3\"]");
 
         JSONConf c = new JSONConfBuilder("default-config.json")
                 .withUserConfFilePath("test-fixtures/config.json")
@@ -119,5 +121,14 @@ public class JSONConfBuilderTest {
         assertEquals(c.getValue("name"), "cli config");
         assertEquals(c.getValue("shared.shared_field_num"), 3);
         assertEquals(c.getValue("shared.shared_field_obj.value"), "cli config");
+        assertEquals(c.getValue("['annoyingly long string'].browsers"), "firefox");
+        List<Integer> array_of_nums = c.getValue("array_of_nums");
+        assertTrue(array_of_nums.get(0) == 1);
+        assertTrue(array_of_nums.get(1) == 2);
+        assertTrue(array_of_nums.get(2) == 3);
+        List<String> array_of_strings = c.getValue("array_of_strings");
+        assertEquals(array_of_strings.get(0), "string1");
+        assertEquals(array_of_strings.get(1), "string2");
+        assertEquals(array_of_strings.get(2), "string3");
     }
 }

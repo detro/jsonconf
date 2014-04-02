@@ -270,6 +270,8 @@ public class JSONConfBuilder {
     protected JsonObject jsonPathAssignmentToJsonObject(String jsonPathAssignment) {
         JsonObject result = new JsonObject();
         JsonObject current = result;
+        JsonObject previous = null;
+        String previousKey = null;
 
         // Use JsonPath to tokenize the given jsonPath and reconstruct a JsonObject
         PathTokenizer jsonPathTokenizer = new PathTokenizer(jsonPathAssignment);
@@ -280,27 +282,39 @@ public class JSONConfBuilder {
             PathToken token = i.next();
             if (token.isEndToken()) {
                 // Reached the end of the Json Path.
-                String[] keyValue = token.getFragment().split("=");
+                if (token.getFragment().contains("=")) {
+                    String[] keyValue = token.getFragment().split("=");
 
-                // Here we MUST find an assignment, or throw an exception
-                if (keyValue.length != 2) {
-                    throw new RuntimeException(String.format(
-                            "JSON Path '%s' contains no assignment in last token '%s'",
-                            jsonPathAssignment,
-                            token.getFragment()));
+                    // Here we MUST find an assignment, or throw an exception
+                    if (keyValue.length != 2) {
+                        throw new RuntimeException(String.format(
+                                "JSON Path '%s' contains no assignment in last token '%s'",
+                                jsonPathAssignment,
+                                token.getFragment()));
+                    }
+
+                    // Add final "key=value"
+                    String key = keyValue[0].replace("\"", "");
+                    current.add(key, stringToJsonElement(keyValue[1]));
+                } else {
+                    // WORKAROUND: Need to use the previous object and key as the assignment symbol was
+                    // wrongly assigned to the previous Token by the parser
+                    previous.add(previousKey, stringToJsonElement(token.getFragment()));
                 }
-
-                // Add final "key=value"
-                String key = keyValue[0].replace("\"", "");
-                current.add(key, stringToJsonElement(keyValue[1]));
             } else {
                 // Add another "key=object"
                 JsonObject next = new JsonObject();
 
-                String key = token.getFragment().replace("\"", "");
-                current.add(key, next);
+                // Remove quotes from string before storing
+                String currentKey = token.getFragment().replace("\"", "");
+                // Remove assignment from key, if found by tokenization
+                if (currentKey.endsWith("=")) currentKey = currentKey.substring(0, currentKey.length() -1);
+
+                current.add(currentKey, next);
 
                 // Move to the next object in the tree
+                previous = current;
+                previousKey = currentKey;
                 current = next;
             }
         }
@@ -319,9 +333,13 @@ public class JSONConfBuilder {
             return gson.fromJson(input, JsonPrimitive.class);
         } catch(ClassCastException ccePrimitive) {
             try {
-                return gson.fromJson(input, JsonNull.class);
-            } catch (ClassCastException cceNull) {
-                return gson.fromJson(input, JsonObject.class);
+                return gson.fromJson(input, JsonArray.class);
+            } catch (ClassCastException cceArray) {
+                try {
+                    return gson.fromJson(input, JsonNull.class);
+                } catch (ClassCastException cceNull) {
+                    return gson.fromJson(input, JsonObject.class);
+                }
             }
         }
     }
