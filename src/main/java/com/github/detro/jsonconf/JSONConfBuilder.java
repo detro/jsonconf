@@ -163,45 +163,34 @@ public class JSONConfBuilder {
         }
 
         // Work out the actual file location
-            // Look within the project resources
-            InputStream is = JSONConfBuilder.class.getClassLoader().getResourceAsStream(filePath);
+        // Look within the project resources
+        InputStream is = JSONConfBuilder.class.getClassLoader().getResourceAsStream(filePath);
+
+        Reader fileReader = null;
+        try {
+            if (null != is) {
+                // File is within the resources of the project
+                fileReader = new InputStreamReader(is);
+            } else {
+                // File not within the resources of the project
+                if (!new File(filePath).exists()) {
+                    throw new FileNotFoundException(filePath);
+                }
+                fileReader = new FileReader(filePath);
+            }
+            return gson.fromJson(fileReader, JsonObject.class);
+        } catch (FileNotFoundException fnfe) {
+            throw new RuntimeException(fnfe);
+        } finally {
             try {
-                Reader fileReader = null;
-                try {
-                    if (null != is) {
-                        // File is within the resources of the project
-                        fileReader = new InputStreamReader(is);
-                    } else {
-                        // File not within the resources of the project
-                        if (!new File(filePath).exists()) {
-                            throw new FileNotFoundException(filePath);
-                        }
-                        fileReader = new FileReader(filePath);
-                    }
-                    return gson.fromJson(fileReader, JsonObject.class);
-                }
-                catch (FileNotFoundException fnfe) {
-                    throw new RuntimeException(fnfe);
-                }
-                finally {
-                    try {
-                        fileReader.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                fileReader.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            finally {
-                if (null != is) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+        }
 
     }
+
 
     /**
      * Algebraic Union of 2 JsonObjects.
@@ -353,11 +342,7 @@ public class JSONConfBuilder {
             try {
                 return gson.fromJson(input, JsonArray.class);
             } catch (ClassCastException cceArray) {
-                try {
-                    return gson.fromJson(input, JsonNull.class);
-                } catch (ClassCastException cceNull) {
-                    return gson.fromJson(input, JsonObject.class);
-                }
+                return gson.fromJson(input, JsonNull.class);
             }
         }
     }

@@ -107,6 +107,8 @@ public class JSONConfBuilderTest {
         sysProps.setProperty(cliPropsArrayName + "[2]", "['annoyingly long string'].browsers=\"firefox\"");
         sysProps.setProperty(cliPropsArrayName + "[3]", "array_of_nums=[1, 2, 3]");
         sysProps.setProperty(cliPropsArrayName + "[4]", "array_of_strings=[\"string1\", \"string2\", \"string3\"]");
+        sysProps.setProperty(cliPropsArrayName + "[5]", "nullObject=null");
+        sysProps.setProperty(cliPropsArrayName + "[6]", "emptyObject=()");
 
         JSONConf c = new JSONConfBuilder("default-config.json")
                 .withUserConfFilePath("test-fixtures/config.json")
@@ -122,6 +124,8 @@ public class JSONConfBuilderTest {
         assertEquals(c.getValue("shared.shared_field_num"), 3);
         assertEquals(c.getValue("shared.shared_field_obj.value"), "cli config");
         assertEquals(c.getValue("['annoyingly long string'].browsers"), "firefox");
+        assertNull(c.getValue("nullObject"));
+        assertNotNull(c.getValue("emptyObject"));
         List<Integer> array_of_nums = c.getValue("array_of_nums");
         assertTrue(array_of_nums.get(0) == 1);
         assertTrue(array_of_nums.get(1) == 2);
