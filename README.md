@@ -1,5 +1,7 @@
 # JSONConf (for Java)
 
+[![Build Status](https://travis-ci.org/detro/jsonconf.svg?branch=master)](https://travis-ci.org/detro/jsonconf)
+
 Java utlity that to introduce JSON-based configuration to your project.
 
 The aim is to make it intuitive to define a `default` configuration, that is then
