@@ -177,3 +177,7 @@ TODO
 
 See [LICENSE.BSD](./LICENSE.BSD) located in the project source root.
 
+## Setup in Intellij
+
+After cloning the project, enter the directory and type chmod +x ./gradlew.bat in order to download a local gradle.
+Run ./gradlew.bat idea to generate an Intellij project.
