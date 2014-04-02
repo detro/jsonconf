@@ -41,14 +41,14 @@ public class JSONConfBuilder {
 
     public static final String DEFAULT_CLI_PROPERTIES_ARRAY_NAME = "json";
 
-    private static final Gson DEFAULT_GSON  = new GsonBuilder()
-                                                .serializeNulls()
-                                                .create();
+    private static final Gson DEFAULT_GSON = new GsonBuilder()
+            .serializeNulls()
+            .create();
 
     private String defaultConfFilePath;
-    private String userConfFilePath         = null;
-    private Properties sysProps             = System.getProperties();
-    private String CLIPropsArrayName        = DEFAULT_CLI_PROPERTIES_ARRAY_NAME;
+    private String userConfFilePath = null;
+    private Properties sysProps = System.getProperties();
+    private String CLIPropsArrayName = DEFAULT_CLI_PROPERTIES_ARRAY_NAME;
     private Gson gson = DEFAULT_GSON;
 
     /**
@@ -66,7 +66,7 @@ public class JSONConfBuilder {
      *
      * @param defaultConfFilePath Path to the Default Configuration File.
      *                            "null" string will determine an empty (but valid) configuration file.
-     * @param userConfFilePath Path to the User Configuration File
+     * @param userConfFilePath    Path to the User Configuration File
      *                            "null" string will determine an empty (but valid) configuration file.
      */
     public JSONConfBuilder(String defaultConfFilePath, String userConfFilePath) {
@@ -78,7 +78,7 @@ public class JSONConfBuilder {
      * Provide path to the User Configuration File
      *
      * @param userConfFilePath Path to the User Configuration File
-     *                            "null" string will determine an empty (but valid) configuration file.
+     *                         "null" string will determine an empty (but valid) configuration file.
      * @return Same ConfigurationBuilder instance (for chaining)
      */
     public JSONConfBuilder withUserConfFilePath(String userConfFilePath) {
@@ -162,27 +162,45 @@ public class JSONConfBuilder {
             return new JsonObject();
         }
 
-        Reader fileReader;
-
         // Work out the actual file location
-        try {
             // Look within the project resources
             InputStream is = JSONConfBuilder.class.getClassLoader().getResourceAsStream(filePath);
-            if (null != is) {
-                // File is within the resources of the project
-                fileReader = new InputStreamReader(is);
-            } else {
-                // File not within the resources of the project
-                if (!new File(filePath).exists()) {
-                    throw new FileNotFoundException(filePath);
+            try {
+                Reader fileReader = null;
+                try {
+                    if (null != is) {
+                        // File is within the resources of the project
+                        fileReader = new InputStreamReader(is);
+                    } else {
+                        // File not within the resources of the project
+                        if (!new File(filePath).exists()) {
+                            throw new FileNotFoundException(filePath);
+                        }
+                        fileReader = new FileReader(filePath);
+                    }
+                    return gson.fromJson(fileReader, JsonObject.class);
                 }
-                fileReader = new FileReader(filePath);
+                catch (FileNotFoundException fnfe) {
+                    throw new RuntimeException(fnfe);
+                }
+                finally {
+                    try {
+                        fileReader.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
-        } catch (FileNotFoundException fnfe) {
-            throw new RuntimeException(fnfe);
-        }
+            finally {
+                if (null != is) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
 
-        return gson.fromJson(fileReader, JsonObject.class);
     }
 
     /**
@@ -223,7 +241,7 @@ public class JSONConfBuilder {
      * @param objects Variable list of JsonObjects
      * @return A JsonObject containing the Union of all Objects, applied in order.
      */
-    protected static JsonObject union(JsonObject ... objects) {
+    protected static JsonObject union(JsonObject... objects) {
         if (objects.length == 0) {
             // Returns an empty JsonObject if no input is provided
             return new JsonObject();
@@ -252,7 +270,7 @@ public class JSONConfBuilder {
      * <pre>
      *     json.path.assignment=1
      * </pre>
-     *
+     * <p/>
      * The resulting object would look like:
      * <pre>
      *     {
@@ -308,7 +326,7 @@ public class JSONConfBuilder {
                 // Remove quotes from string before storing
                 String currentKey = token.getFragment().replace("\"", "");
                 // Remove assignment from key, if found by tokenization
-                if (currentKey.endsWith("=")) currentKey = currentKey.substring(0, currentKey.length() -1);
+                if (currentKey.endsWith("=")) currentKey = currentKey.substring(0, currentKey.length() - 1);
 
                 current.add(currentKey, next);
 
@@ -331,7 +349,7 @@ public class JSONConfBuilder {
     protected JsonElement stringToJsonElement(String input) {
         try {
             return gson.fromJson(input, JsonPrimitive.class);
-        } catch(ClassCastException ccePrimitive) {
+        } catch (ClassCastException ccePrimitive) {
             try {
                 return gson.fromJson(input, JsonArray.class);
             } catch (ClassCastException cceArray) {
