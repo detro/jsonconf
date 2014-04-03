@@ -28,6 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 apply plugin: "java"
 apply plugin: "idea"
 apply plugin: "eclipse"
+apply plugin: "maven"
+apply plugin: "signing"
 
 project.buildDir = "gradle/build"
 
@@ -41,13 +43,15 @@ repositories {
 }
 
 project.ext {
-    projectLongName     = "JSONConf"
-    projectArtefactDir  = "jars/"
-    projectCreator      = "Ivan De Marino (https://github.com/detro)"
+    projectLongName         = "JSONConf"
+    projectArtefactDir      = "jars/"
+    projectCreator          = "Ivan De Marino (https://github.com/detro)"
+    projectGroupId          = "com.github.detro"
+    projectArtifactId       = "jsonconf"
 
-    testngVersion       = "6.8.8"
-    gsonVersion         = "2.2.4"
-    jsonPathVersion     = "0.9.1"
+    testngVersion           = "6.8.8"
+    gsonVersion             = "2.2.4"
+    jsonPathVersion         = "0.9.1"
 }
 
 dependencies {
@@ -83,13 +87,15 @@ task buildInfo {
     ext.buildVersionRev = buildVersion.replaceAll("^\\d+\\.\\d+\\.(\\d+).*\$", "\$1")
     ext.buildTimestamp = (int)(new Date().getTime()/1000)
 
+    project.version = ext.buildVersion
+
     // println("* Version: " + ext.buildVersion)
     // println("** Major: " + ext.buildVersionMajor)
     // println("** Minor: " + ext.buildVersionMinor)
     // println("** Revision: " + ext.buildVersionRev)
 }
 
-// JAR
+// Binary Jar
 jar {
     dependsOn buildInfo
 
@@ -110,8 +116,8 @@ jar {
     }
 }
 
-// SOURCE JAR
-task sourceJarBuild(type: Jar, dependsOn: [classes, buildInfo]) {
+// Source Jar
+task sourcesJar(type: Jar, dependsOn: [classes, buildInfo]) {
     classifier = "sources"
     from sourceSets.main.allSource
 
@@ -132,8 +138,8 @@ task sourceJarBuild(type: Jar, dependsOn: [classes, buildInfo]) {
     }
 }
 
-// JAVADOC JAR
-task javadocJarBuild(type: Jar, dependsOn: [javadoc, buildInfo]) {
+// JavaDoc Jar
+task javadocJar(type: Jar, dependsOn: [javadoc, buildInfo]) {
     classifier = "javadoc"
     from javadoc.destinationDir
 
@@ -154,13 +160,85 @@ task javadocJarBuild(type: Jar, dependsOn: [javadoc, buildInfo]) {
     }
 }
 
-// ALL JARS
+// Make all Jars
 task jars {
-    dependsOn jar, sourceJarBuild, javadocJarBuild
+    dependsOn jar, sourcesJar, javadocJar
 }
 
 // Store JavaDoc
 task storeJavadoc(type: Sync, dependsOn: javadoc) {
     from project.docsDir
     into "docs"
+}
+
+// Artifact-making Tasks
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+// Sign artifacts
+signing {
+    sign configurations.archives
+}
+
+// Upload archives to OSS Sonatype
+//
+// NOTE: requires you to first setup
+// 1) ~/.gnupg/* with a PGP key to sign the artifacts
+// 2) ~/.gradle/gradle.properties defining
+//
+//    signing.keyId=<YOUR PGP KEY ID>
+//    signing.password=<PASSWORD TO PGP SECRET RING>
+//    signing.secretKeyRingFile=<FULLPATH TO PGP SECRET RING>
+//    ossrhUsername=<OSS Sonatype Username>
+//    ossrhPassword=<OSS Sonatype Password>
+//
+uploadArchives {
+    dependsOn buildInfo
+
+    repositories {
+        mavenDeployer {
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name "JSONConf"
+                groupId projectGroupId
+                artifactId projectArtifactId
+                version buildInfo.buildVersion
+                packaging "jar"
+
+                description "JSON based configuration utility with some cool features"
+                url "https://github.com/detro/jsonconf"
+
+                scm {
+                    connection "https://github.com/detro/jsonconf.git"
+                    developerConnection "git@github.com:detro/jsonconf.git"
+                    url "https://github.com/detro/jsonconf"
+                }
+
+                licenses {
+                    license {
+                        name "BSD-2-Clause"
+                        url "https://github.com/detro/jsonconf/blob/master/LICENSE.BSD"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id "detro"
+                        name "Ivan De Marino"
+                        email "detronizator@gmail.com"
+                    }
+                }
+            }
+        }
+    }
 }
