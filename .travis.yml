@@ -5,4 +5,8 @@ jdk:
   - openjdk6
   - openjdk7
 
-script: ./gradlew -PossrhUsername=none -PossrhPassword=none check
+install:
+  - ./gradlew -PossrhUsername=none -PossrhPassword=none assemble
+
+script:
+  - ./gradlew -PossrhUsername=none -PossrhPassword=none check
