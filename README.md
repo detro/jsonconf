@@ -160,8 +160,9 @@ JSONConf c = new JSONConfBuilder("default-config.json")
 
 ## Documentation
 
-Please check out the JavaDoc (TODO I haven't setup a hosting for it just yet) (or [source](https://github.com/detro/jsonconf/blob/master/src/main/java/com/github/detro/jsonconf/JSONConfBuilder.java)) to see the different
-options offered by the `JSONConfBuilder` to help you tailor the configuration to your needs.
+Please check out the JavaDoc (TODO I haven't setup a hosting for it just yet)
+(or [source](https://github.com/detro/jsonconf/blob/master/src/main/java/com/github/detro/jsonconf/JSONConfBuilder.java))
+to see the different options offered by the `JSONConfBuilder` to help you tailor the configuration to your needs.
 
 ## Dependencies
 
@@ -173,7 +174,23 @@ compile "com.jayway.jsonpath:json-path:$jsonPathVersion"
 ```
 
 ## Include in your project (via Maven Central)
-TODO
+
+### Maven
+```xml
+<dependency>
+    <groupId>com.github.detro</groupId>
+    <artifactId>jsonconf</artifactId>
+    <version>0.0.4</version>
+</dependency>
+```
+
+### Grails / Gradle
+```grails
+compile 'com.github.detro:jsonconf:0.0.4'
+```
+
+### Others
+See [search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22jsonconf%22).
 
 ## License (BSD)
 
