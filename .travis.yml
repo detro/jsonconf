@@ -5,4 +5,4 @@ jdk:
   - openjdk6
   - openjdk7
 
-script: ./gradlew check
+script: ./gradlew -PossrhUsername=none -PossrhPassword=none check
