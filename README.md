@@ -160,8 +160,8 @@ JSONConf c = new JSONConfBuilder("default-config.json")
 
 ## Documentation
 
-Please check out the [JavaDoc](http://detro.github.io/jsonconf/javadoc/)
-(or [source](https://github.com/detro/jsonconf/blob/master/src/main/java/com/github/detro/jsonconf/JSONConfBuilder.java))
+Please check out the [JavaDoc](https://cdn.rawgit.com/detro/jsonconf/master/docs/javadoc/index.html)
+or the [source](https://github.com/detro/jsonconf/blob/master/src/main/java/com/github/detro/jsonconf/JSONConfBuilder.java) itself
 to see the different options offered by the `JSONConfBuilder` to help you tailor the configuration to your needs.
 
 ## Dependencies
