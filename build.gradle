@@ -61,6 +61,12 @@ dependencies {
     testCompile "org.testng:testng:$testngVersion"
 }
 
+// Forces Java 6 compile source/target
+compileJava {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+}
+
 tasks.withType(JavaExec) {
     classpath = configurations.compile + sourceSets.test.output
     args project.hasProperty("args") ? project.args.split("\\s") : []
