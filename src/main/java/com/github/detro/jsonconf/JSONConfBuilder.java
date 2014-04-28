@@ -183,7 +183,7 @@ public class JSONConfBuilder {
             throw new RuntimeException(fnfe);
         } finally {
             try {
-                fileReader.close();
+                if (null != fileReader) fileReader.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
