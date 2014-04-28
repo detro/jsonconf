@@ -180,16 +180,16 @@ compile "com.jayway.jsonpath:json-path:$jsonPathVersion"
 <dependency>
     <groupId>com.github.detro</groupId>
     <artifactId>jsonconf</artifactId>
-    <version>0.0.4</version>
+    <version>LATEST_VERSION</version>
 </dependency>
 ```
 
 ### Grails / Gradle
 ```grails
-compile 'com.github.detro:jsonconf:0.0.4'
+compile 'com.github.detro:jsonconf:LATEST_VERSION'
 ```
 
-### Others
+### Others / Latest Version
 See [search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22jsonconf%22).
 
 ## License (BSD)
