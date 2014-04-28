@@ -32,11 +32,22 @@ import com.jayway.jsonpath.internal.PathToken;
 import com.jayway.jsonpath.internal.PathTokenizer;
 
 import java.io.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
-
+/**
+ * This Builder helps to create a JSONConf object.
+ * It can be tuned to the specific needs of your code, and can assemble together
+ * (via algebraic UNION operation), all the JSON files given to it.
+ * <p/>
+ *
+ * There is only one mandatory parameter: 1 "default" JSON file.
+ * After that, everything is optional.
+ * <p/>
+ *
+ * Particular attention needs to be given to the "user" JSON files.
+ * The final JSONConf can be the UNION of many of those: the order in which
+ * this UNION is executed is based on the order in which they are provided.
+ */
 public class JSONConfBuilder {
 
     public static final String DEFAULT_CLI_PROPERTIES_ARRAY_NAME = "json";
@@ -46,7 +57,7 @@ public class JSONConfBuilder {
             .create();
 
     private String defaultConfFilePath;
-    private String userConfFilePath = null;
+    private List<String> userConfFilePaths = new ArrayList<String>();
     private Properties sysProps = System.getProperties();
     private String CLIPropsArrayName = DEFAULT_CLI_PROPERTIES_ARRAY_NAME;
     private Gson gson = DEFAULT_GSON;
@@ -66,23 +77,28 @@ public class JSONConfBuilder {
      *
      * @param defaultConfFilePath Path to the Default Configuration File.
      *                            "null" string will determine an empty (but valid) configuration file.
-     * @param userConfFilePath    Path to the User Configuration File
+     * @param userConfFilePaths   Path to the User Configuration Files
      *                            "null" string will determine an empty (but valid) configuration file.
      */
-    public JSONConfBuilder(String defaultConfFilePath, String userConfFilePath) {
+    public JSONConfBuilder(String defaultConfFilePath, String... userConfFilePaths) {
         this.defaultConfFilePath = defaultConfFilePath;
-        this.userConfFilePath = userConfFilePath;
+        this.withUserConfFilePath(userConfFilePaths);
     }
 
     /**
-     * Provide path to the User Configuration File
+     * Provide paths to a User Configuration Files.
      *
-     * @param userConfFilePath Path to the User Configuration File
+     * The order in which files are added DOES influence the order in which
+     * files are united.
+     * This can be used multiple times: every time the Paths are added in
+     * queue to the list of User Conf files provided so far.
+     *
+     * @param userConfFilePaths Path to the User Configuration File
      *                         "null" string will determine an empty (but valid) configuration file.
      * @return Same ConfigurationBuilder instance (for chaining)
      */
-    public JSONConfBuilder withUserConfFilePath(String userConfFilePath) {
-        this.userConfFilePath = userConfFilePath;
+    public JSONConfBuilder withUserConfFilePath(String... userConfFilePaths) {
+        this.userConfFilePaths.addAll(Arrays.asList(userConfFilePaths));
         return this;
     }
 
@@ -123,30 +139,31 @@ public class JSONConfBuilder {
     /**
      * Builds the Configuration, based on the given parameters.
      *
+     * The provided JSON files will be UNITED one at a time, in the order
+     * they have been provided.
+     *
      * @return New Configuration, based on the given parameters.
      */
     public JSONConf build() {
-        // Load Default Configuration
-        JsonObject defaultConf = loadJsonFromFile(defaultConfFilePath);
+        // Start from the default configuration
+        JsonObject result = loadJsonFromFile(defaultConfFilePath);
 
-        // Load User Configuration)
-        JsonObject userConf = loadJsonFromFile(userConfFilePath);
+        // United the User configuration (one at a time, if any)
+        for (String userConfFilePath : userConfFilePaths) {
+            result = union(result, loadJsonFromFile(userConfFilePath));
+        }
 
-        // Load CLI Configuration
+        // Unite CLI Configuration (one at a time, if any)
         JsonObject cliConf = new JsonObject();
         int idx = 0;
         String idxFormat = CLIPropsArrayName + "[%d]";
         while (sysProps.getProperty(String.format(idxFormat, idx)) != null) {
-            cliConf = union(
-                    cliConf,
+            result = union(
+                    result,
                     jsonPathAssignmentToJsonObject(sysProps.getProperty(String.format(idxFormat, idx++))));
         }
 
-        // Load UNION Configuration:
-        // <default configuration> U <user configuration> U <CLI configuration>
-        JsonObject unionConf = union(defaultConf, userConf, cliConf);
-
-        return new JSONConf(unionConf);
+        return new JSONConf(result);
     }
 
     /**
