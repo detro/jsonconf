@@ -34,7 +34,7 @@ public class JSONConf {
 
     private static final String REFERENCE_PREFIX = "@";
 
-    private JsonObject jsonConfiguration;
+    private JsonObject internalJsonObject;
 
     /**
      * JSONConf main class.
@@ -49,7 +49,7 @@ public class JSONConf {
         if (null == jsonCfg || !jsonCfg.isJsonObject()) {
             throw new ClassCastException("Input JsonObject invalid or null");
         }
-        this.jsonConfiguration = jsonCfg;
+        this.internalJsonObject = jsonCfg;
     }
 
     /**
@@ -63,7 +63,7 @@ public class JSONConf {
      * @return Parameter value, if found; "null" otherwise.
      */
     public <T> T getValue(String jsonPath) {
-        T result = JsonPath.read(jsonConfiguration.toString(), jsonPath);
+        T result = JsonPath.read(internalJsonObject.toString(), jsonPath);
 
         // If result is a String and begins with the Reference Prefix, use it as input for recursive call
         if (result instanceof String && ((String) result).startsWith(REFERENCE_PREFIX)) {
@@ -101,15 +101,25 @@ public class JSONConf {
      */
     public JSONConf getChild(String childObjectKey) {
         try {
-            JsonObject childObj = jsonConfiguration.getAsJsonObject(childObjectKey);
+            JsonObject childObj = internalJsonObject.getAsJsonObject(childObjectKey);
             return new JSONConf(childObj);
         } catch (ClassCastException cce) {
             throw new RuntimeException(String.format("No Child Configuration '%s' found", childObjectKey), cce);
         }
     }
 
+    /**
+     * Returns the "internal" JSON Object on which this JSONConf is based.
+     * NOTE: modifying this alters the JSONConf object directly. Use with care.
+     *
+     * @return The internal {@code JsonObject} on which this JSONConf is based.
+     */
+    public JsonObject getInternalJsonObject() {
+        return internalJsonObject;
+    }
+
     @Override
     public String toString() {
-        return jsonConfiguration.toString();
+        return internalJsonObject.toString();
     }
 }
