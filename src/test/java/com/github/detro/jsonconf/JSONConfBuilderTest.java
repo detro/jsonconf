@@ -135,4 +135,30 @@ public class JSONConfBuilderTest {
         assertEquals(array_of_strings.get(1), "string2");
         assertEquals(array_of_strings.get(2), "string3");
     }
+
+    @Test(dataProvider = "provideCLIPropertiesArrayNames", expectedExceptions = RuntimeException.class)
+    public void shouldThrowForMalformedCLIProp1(String cliPropsArrayName) {
+        Properties sysProps = new Properties();
+
+        sysProps.setProperty(cliPropsArrayName + "[0]", "name=");
+
+        JSONConf c = new JSONConfBuilder("default-config.json")
+                .withUserConfFilePath("test-fixtures/config.json")
+                .withSystemProperties(sysProps)
+                .withCLIPropsArray(cliPropsArrayName)
+                .build();
+    }
+
+    @Test(dataProvider = "provideCLIPropertiesArrayNames", expectedExceptions = RuntimeException.class)
+    public void shouldThrowForMalformedCLIProp2(String cliPropsArrayName) {
+        Properties sysProps = new Properties();
+
+        sysProps.setProperty(cliPropsArrayName + "[0]", "shared.shared_field_num");
+
+        JSONConf c = new JSONConfBuilder("default-config.json")
+                .withUserConfFilePath("test-fixtures/config.json")
+                .withSystemProperties(sysProps)
+                .withCLIPropsArray(cliPropsArrayName)
+                .build();
+    }
 }

@@ -294,52 +294,39 @@ public class JSONConfBuilder {
     protected JsonObject jsonPathAssignmentToJsonObject(String jsonPathAssignment) {
         JsonObject result = new JsonObject();
         JsonObject current = result;
-        JsonObject previous = null;
-        String previousKey = null;
+        String currentKey;
+
+        // Split given JSON Path in 2 and check it contains what's expected
+        String[] split = jsonPathAssignment.split("=");
+        if (split.length != 2) {
+            throw new RuntimeException(String.format(
+                    "Malformed JSON Path Assignment '%s'. " +
+                        "Instead it should look like 'JSONPATH=VALUE'.",
+                    jsonPathAssignment));
+        }
+
+        String jsonPath = split[0];
+        String jsonValue = split[1];
 
         // Use JsonPath to tokenize the given jsonPath and reconstruct a JsonObject
-        PathTokenizer jsonPathTokenizer = new PathTokenizer(jsonPathAssignment);
-        Iterator<PathToken> i = jsonPathTokenizer.iterator();
-        i.next();   //< ignore "$", tha represent the root of a Json Path
+        PathTokenizer jsonPathToken = new PathTokenizer(jsonPath);
+        Iterator<PathToken> jsonPathTokenIter = jsonPathToken.iterator();
+        jsonPathTokenIter.next();   //< ignore "$", tha represent the root of a Json Path
 
-        while (i.hasNext()) {
-            PathToken token = i.next();
-            if (token.isEndToken()) {
-                // Reached the end of the Json Path.
-                if (token.getFragment().contains("=")) {
-                    String[] keyValue = token.getFragment().split("=");
+        while(jsonPathTokenIter.hasNext()) {
+            PathToken token = jsonPathTokenIter.next();
 
-                    // Here we MUST find an assignment, or throw an exception
-                    if (keyValue.length != 2) {
-                        throw new RuntimeException(String.format(
-                                "JSON Path '%s' contains no assignment in last token '%s'",
-                                jsonPathAssignment,
-                                token.getFragment()));
-                    }
+            // Prepare "current key"
+            currentKey = token.getFragment().replace("\"", "");
 
-                    // Add final "key=value"
-                    String key = keyValue[0].replace("\"", "");
-                    current.add(key, stringToJsonElement(keyValue[1]));
-                } else {
-                    // WORKAROUND: Need to use the previous object and key as the assignment symbol was
-                    // wrongly assigned to the previous Token by the parser
-                    previous.add(previousKey, stringToJsonElement(token.getFragment()));
-                }
-            } else {
+            if (!token.isEndToken()) {
                 // Add another "key=object"
-                JsonObject next = new JsonObject();
-
-                // Remove quotes from string before storing
-                String currentKey = token.getFragment().replace("\"", "");
-                // Remove assignment from key, if found by tokenization
-                if (currentKey.endsWith("=")) currentKey = currentKey.substring(0, currentKey.length() - 1);
-
-                current.add(currentKey, next);
-
-                // Move to the next object in the tree
-                previous = current;
-                previousKey = currentKey;
-                current = next;
+                current.add(currentKey, new JsonObject());
+                // Move to the next object down the tree
+                current = current.getAsJsonObject(currentKey);
+            } else {
+                // Assign the final value
+                current.add(currentKey, stringToJsonElement(jsonValue));
             }
         }
 
