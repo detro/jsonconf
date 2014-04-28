@@ -1,7 +1,7 @@
 /*
 This file is part of the JSONConf project by Ivan De Marino (http://ivandemarino.me).
 
-Copyright (c) 2013, Ivan De Marino (http://ivandemarino.me)
+Copyright (c) 2014, Ivan De Marino (http://ivandemarino.me)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
