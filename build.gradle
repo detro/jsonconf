@@ -52,6 +52,7 @@ project.ext {
     testngVersion           = "6.8.8"
     gsonVersion             = "2.2.4"
     jsonPathVersion         = "0.9.1"
+    slf4jSimpleVersion      = "1.7.7"
 }
 
 dependencies {
@@ -59,6 +60,7 @@ dependencies {
     compile "com.jayway.jsonpath:json-path:$jsonPathVersion"
 
     testCompile "org.testng:testng:$testngVersion"
+    testCompile "org.slf4j:slf4j-simple:$slf4jSimpleVersion"
 }
 
 // Forces Java 6 compile source/target
